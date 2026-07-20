@@ -1,0 +1,27 @@
+🤖 Alura Agente CorporativoAlura Agente es un asistente de Inteligencia Artificial diseñado para entornos corporativos. Permite a los usuarios "chatear" con documentos internos (PDFs) utilizando procesamiento en lenguaje natural, garantizando respuestas precisas basadas estrictamente en la base de conocimiento proporcionada.🏗️ Arquitectura del SistemaEste proyecto implementa una arquitectura RAG (Retrieval-Augmented Generation):Interfaz de Usuario (Frontend): Streamlit - Proveé una interfaz de chat web fluida y reactiva.Procesamiento de Documentos: PyPDF y LangChain Text Splitters - Extraen el texto y lo dividen en fragmentos semánticos (chunks).Orquestación de IA: LangChain - Conecta los flujos de datos entre los documentos, la base vectorial y el modelo de lenguaje.Base de Datos Vectorial: FAISS (Meta) - Almacena los embeddings localmente en memoria para búsquedas ultrarrápidas de contexto.Modelos de Inteligencia Artificial: CohereEmbeddings: embed-multilingual-v3.0 (Optimizado para español).Generación (LLM): command-a-03-2025 (Última generación empresarial de Cohere).Nota de Seguridad y Red: El proyecto incluye "monkey patching" seguro a nivel local para evadir bloqueos de certificados SSL (comunes en firewalls corporativos con Zscaler/Fortinet).💻 Configuración Local (Desarrollo)Requisitos PreviosPython 3.10 o superior.Una API Key válida de Cohere (puedes obtener una gratuita en dashboard.cohere.com).Pasos de InstalaciónClonar el repositorio y entrar a la carpeta:git clone <tu-url-de-github>
+cd alura-agente
+Crear y activar un entorno virtual:En Windows:python -m venv .venv
+.\.venv\Scripts\activate
+En Mac/Linux:python3 -m venv .venv
+source .venv/bin/activate
+Instalar dependencias:pip install -r requirements.txt
+Configurar variables de entorno:Crea un archivo llamado .env en la raíz del proyecto y agrega tus datos:COHERE_API_KEY=tu_api_key_aqui
+DOCUMENT_PATH=documento.pdf
+Preparar el documento:Coloca tu archivo PDF en la misma carpeta y nómbralo documento.pdf (o actualiza el nombre en el archivo .env).Ejecutar la aplicación:python -m streamlit run app.py
+☁️ Guía de Despliegue en Oracle Cloud Infrastructure (OCI)Para llevar este proyecto a producción en la nube de Oracle, sigue esta arquitectura de referencia básica utilizando una Instancia Compute (IaaS):1. Provisionamiento (Infraestructura)Ingresa a la consola de OCI.Ve a Compute > Instances > Create Instance.Selecciona una imagen de Oracle Linux 8 o Ubuntu 22.04 LTS.En "Shape", la capa gratuita (Always Free) VM.Standard.E2.1.Micro o una VM.Standard.A1.Flex (ARM) son suficientes para ejecutar esta aplicación.Asigna una IP Pública (Ephemeral Public IP) y descarga tus claves SSH (.key).2. Configuración de Red (VCN y Firewall)Streamlit corre por defecto en el puerto 8501. Debes abrirlo en dos lugares:Security List en OCI: Ve a tu VCN -> Subnet -> Security Lists y añade una regla de entrada (Ingress Rule) para TCP en el puerto 8501.Firewall del Sistema Operativo (dentro de la instancia):Oracle Linux: sudo firewall-cmd --zone=public --permanent --add-port=8501/tcp seguido de sudo firewall-cmd --reload.Ubuntu: sudo ufw allow 8501.3. Despliegue de la AplicaciónConéctate por SSH a tu instancia:ssh -i tu_llave.key opc@<IP_PUBLICA_OCI>
+Instala Python, Git y ejecuta el proyecto como un servicio en segundo plano usando tmux o nohup:# 1. Instalar dependencias del SO
+sudo yum install git python3.11 -y  # (Oracle Linux)
+
+# 2. Clonar y preparar
+git clone <tu-url-de-github>
+cd alura-agente
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# 3. Crear el archivo .env con nano
+nano .env # (pega tus credenciales aquí)
+
+# 4. Ejecutar en segundo plano con nohup
+nohup python -m streamlit run app.py &
+Ahora podrás acceder a tu aplicación desde cualquier parte del mundo ingresando a: http://<IP_PUBLICA_OCI>:8501.
